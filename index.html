@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>A!SK PE Mobile Trainer</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #5c6670;
+      --line: #d7dde2;
+      --paper: #f8faf9;
+      --panel: #ffffff;
+      --teal: #0f766e;
+      --blue: #2563eb;
+      --rose: #be123c;
+      --amber: #b45309;
+      --green: #15803d;
+      --shadow: 0 10px 28px rgba(23, 32, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .shell {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 16px 14px 28px;
+    }
+
+    header {
+      padding: 12px 2px 14px;
+    }
+
+    .eyebrow {
+      color: var(--teal);
+      font-size: 0.78rem;
+      font-weight: 800;
+      margin: 0 0 6px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.75rem, 8vw, 3.1rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.98rem;
+    }
+
+    .status-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 14px 0 10px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 70px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.25rem;
+      line-height: 1.2;
+    }
+
+    .stat span {
+      color: var(--muted);
+      display: block;
+      font-size: 0.78rem;
+      margin-top: 4px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      padding: 8px 0;
+      background: rgba(248, 250, 249, 0.96);
+      backdrop-filter: blur(12px);
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      min-height: 42px;
+      color: var(--ink);
+      font-weight: 750;
+    }
+
+    .tab[aria-selected="true"] {
+      border-color: var(--teal);
+      color: #fff;
+      background: var(--teal);
+    }
+
+    main {
+      display: grid;
+      gap: 12px;
+    }
+
+    section {
+      display: none;
+    }
+
+    section.active {
+      display: grid;
+      gap: 12px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1.08rem;
+      line-height: 1.3;
+    }
+
+    h3 {
+      margin: 16px 0 8px;
+      font-size: 0.98rem;
+    }
+
+    p {
+      line-height: 1.58;
+    }
+
+    .routine {
+      display: grid;
+      gap: 8px;
+    }
+
+    .check {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: 9px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfcfc;
+    }
+
+    .check input {
+      width: 22px;
+      height: 22px;
+      margin: 0;
+      accent-color: var(--teal);
+    }
+
+    .question {
+      min-height: 132px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfc;
+      padding: 14px;
+      display: grid;
+      align-content: center;
+      gap: 8px;
+    }
+
+    .question .tag {
+      width: fit-content;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: #fff;
+      background: var(--blue);
+    }
+
+    .question .tag.basic {
+      background: var(--green);
+    }
+
+    .question .tag.tech {
+      background: var(--amber);
+    }
+
+    .question .tag.pressure {
+      background: var(--rose);
+    }
+
+    .questionText {
+      margin: 0;
+      font-size: 1.18rem;
+      font-weight: 800;
+      line-height: 1.42;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin: 0;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .actions.three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-height: 46px;
+      background: var(--panel);
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .btn.primary {
+      background: var(--teal);
+      color: #fff;
+      border-color: var(--teal);
+    }
+
+    .btn.blue {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue);
+    }
+
+    .timer {
+      text-align: center;
+      padding: 18px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fbfcfc;
+    }
+
+    .time {
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(3.4rem, 18vw, 5.6rem);
+      line-height: 1;
+      font-weight: 850;
+    }
+
+    .timer.warn .time {
+      color: var(--amber);
+    }
+
+    .timer.danger .time {
+      color: var(--rose);
+    }
+
+    .scoreGrid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px 12px;
+      align-items: center;
+    }
+
+    .scoreGrid label {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .scoreGrid input {
+      width: 54px;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      text-align: center;
+      background: #fff;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 92px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      line-height: 1.5;
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #fbfcfc;
+    }
+
+    summary {
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    ul {
+      margin: 10px 0 0;
+      padding-left: 20px;
+      line-height: 1.55;
+    }
+
+    .history {
+      display: grid;
+      gap: 8px;
+    }
+
+    .entry {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfcfc;
+    }
+
+    .entry strong {
+      display: block;
+      line-height: 1.35;
+    }
+
+    .entry small {
+      color: var(--muted);
+      display: block;
+      margin-top: 5px;
+    }
+
+    .pillRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 9px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 750;
+    }
+
+    @media (max-width: 420px) {
+      .shell {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .status-bar {
+        grid-template-columns: 1fr;
+      }
+
+      .actions,
+      .actions.three {
+        grid-template-columns: 1fr;
+      }
+
+      .tab {
+        font-size: 0.86rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <p class="eyebrow">A!SK PE · smartphone weekday service</p>
+      <h1>말하기로 끝내는 PE 훈련</h1>
+      <p class="subtitle">평일에는 스마트폰으로 12분씩 답변 구조를 압축하고, 마지막 2일은 노트북 카메라와 마이크로 실전 리허설만 반복합니다.</p>
+      <div class="status-bar">
+        <div class="stat"><strong id="todayCount">0</strong><span>오늘 기록</span></div>
+        <div class="stat"><strong id="avgScore">-</strong><span>평균 점수</span></div>
+        <div class="stat"><strong id="weakest">-</strong><span>보완 축</span></div>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="훈련 탭">
+      <button class="tab" data-tab="today" aria-selected="true">오늘</button>
+      <button class="tab" data-tab="drill" aria-selected="false">실전</button>
+      <button class="tab" data-tab="cards" aria-selected="false">카드</button>
+      <button class="tab" data-tab="log" aria-selected="false">기록</button>
+    </nav>
+
+    <main>
+      <section id="today" class="active">
+        <div class="panel">
+          <h2>오늘의 12분 루틴</h2>
+          <div class="routine" id="routine"></div>
+        </div>
+        <div class="panel">
+          <h2>요일별 초점</h2>
+          <p id="dayFocus" class="subtitle"></p>
+          <div class="pillRow" id="dayPills"></div>
+        </div>
+        <div class="panel">
+          <h2>오늘 금지</h2>
+          <ul>
+            <li>긴 스크립트를 눈으로만 읽기</li>
+            <li>새 자료를 계속 추가하기</li>
+            <li>PE 연결 없이 경험만 말하기</li>
+            <li>30초 미만으로 답변을 끝내기</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="drill">
+        <div class="panel">
+          <h2>랜덤 질문</h2>
+          <div class="question">
+            <span class="tag" id="questionTag">대기</span>
+            <p class="questionText" id="questionText">질문 뽑기를 누르면 시작합니다.</p>
+            <p class="hint" id="questionHint">첫 문장에는 결론을 먼저 말하세요.</p>
+          </div>
+          <div class="actions three" style="margin-top: 10px;">
+            <button class="btn primary" id="pickAny">질문 뽑기</button>
+            <button class="btn" id="pickBasic">1분 질문</button>
+            <button class="btn" id="pickJob">3분 질문</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>실전 타이머</h2>
+          <div class="timer" id="timerBox">
+            <div class="time" id="time">01:00</div>
+            <p class="hint" id="timerHint">1분 문항은 5문장 안에 끝냅니다.</p>
+          </div>
+          <div class="actions three" style="margin-top: 10px;">
+            <button class="btn blue" id="oneMin">1분</button>
+            <button class="btn blue" id="threeMin">3분</button>
+            <button class="btn primary" id="startStop">시작</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>자가 채점</h2>
+          <div class="scoreGrid">
+            <label for="s1">결론</label><input id="s1" inputmode="numeric" min="0" max="2" value="0">
+            <label for="s2">구조</label><input id="s2" inputmode="numeric" min="0" max="2" value="0">
+            <label for="s3">직무 연결</label><input id="s3" inputmode="numeric" min="0" max="2" value="0">
+            <label for="s4">구체성</label><input id="s4" inputmode="numeric" min="0" max="2" value="0">
+            <label for="s5">시간</label><input id="s5" inputmode="numeric" min="0" max="2" value="0">
+          </div>
+          <h3>다음 답변에서 고칠 한 줄</h3>
+          <textarea id="note" placeholder="예: 첫 문장을 'PE는 제품 검증과 불량 분석으로 완성도를 높이는 직무입니다'로 시작하기"></textarea>
+          <div class="actions" style="margin-top: 10px;">
+            <button class="btn primary" id="saveScore">점수 저장</button>
+            <button class="btn" id="resetScore">초기화</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="cards">
+        <div class="panel">
+          <h2>접어두고 말하는 카드</h2>
+          <details open>
+            <summary>만능 포지셔닝</summary>
+            <p>저는 제품이나 회로를 감으로 판단하기보다, 조건을 나누고 데이터를 비교해 원인을 좁히는 검증형 엔지니어입니다.</p>
+          </details>
+          <details>
+            <summary>1분 기본 질문 프레임</summary>
+            <ul>
+              <li>결론: 나는 어떤 사람인가</li>
+              <li>근거: 어떤 경험에서 드러났나</li>
+              <li>행동: 내가 어떻게 했나</li>
+              <li>결과: 무엇을 만들었나</li>
+              <li>연결: PE에서 어떻게 쓰이나</li>
+            </ul>
+          </details>
+          <details>
+            <summary>3분 직무 질문 프레임</summary>
+            <ul>
+              <li>정의: 개념을 1-2문장으로 설명</li>
+              <li>중요성: 품질, 수율, 제품 성능과 연결</li>
+              <li>PE 관점: 테스트 조건, 불량 분석, 데이터 해석</li>
+              <li>내 경험: TCAD, SRAM/MBIST, PPA, Compression, 협업 중 하나</li>
+              <li>마무리: 입사 후 기여 방식</li>
+            </ul>
+          </details>
+          <details>
+            <summary>좋은 PE 답변 문장</summary>
+            <ul>
+              <li>제품 특성을 테스트 조건과 데이터로 해석하겠습니다.</li>
+              <li>불량 원인을 단정하지 않고 조건을 나누어 재현하겠습니다.</li>
+              <li>품질과 테스트 효율 사이의 균형을 데이터로 판단하겠습니다.</li>
+              <li>설계·소자·공정·AE·P&T와 같은 문제 정의를 만들겠습니다.</li>
+            </ul>
+          </details>
+          <details>
+            <summary>실전 전환 주의</summary>
+            <ul>
+              <li>A!SK 본 검사는 모바일 응시가 금지입니다.</li>
+              <li>스마트폰 학습은 암기와 구조화용으로만 씁니다.</li>
+              <li>최종 2일은 반드시 노트북, Chrome, 카메라, 마이크로 리허설합니다.</li>
+            </ul>
+          </details>
+        </div>
+      </section>
+
+      <section id="log">
+        <div class="panel">
+          <h2>훈련 기록</h2>
+          <div class="history" id="history"></div>
+          <div class="actions" style="margin-top: 10px;">
+            <button class="btn" id="exportLog">기록 복사</button>
+            <button class="btn" id="clearLog">기록 삭제</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const questions = [
+      { type: "basic", label: "1분 기본", sec: 60, q: "1분 자기소개를 해주세요.", hint: "검증형 엔지니어 문장으로 시작합니다." },
+      { type: "basic", label: "1분 기본", sec: 60, q: "지원 직무에 관심을 갖게 된 계기를 말해주세요.", hint: "설계보다 검증과 원인 분석에 강점이 있다는 흐름으로 갑니다." },
+      { type: "basic", label: "1분 기본", sec: 60, q: "본인의 강점을 경험 기반으로 말해주세요.", hint: "구조화, 작은 단위 검증, cross-check를 넣습니다." },
+      { type: "basic", label: "1분 기본", sec: 60, q: "팀원과 의견이 달랐던 경험을 말해주세요.", hint: "같은 문제 정의를 만드는 사람으로 닫습니다." },
+      { type: "basic", label: "1분 기본", sec: 60, q: "AI를 활용한 경험과 그 한계를 어떻게 관리했는지 말해주세요.", hint: "자동화는 하되 판단은 데이터와 원인으로 검증한다고 말합니다." },
+      { type: "job", label: "3분 직무", sec: 180, q: "Product Engineering 직무를 어떻게 이해하고 있나요?", hint: "Test Engineering, 제품 검증, Test Solution, 불량 분석 네 축." },
+      { type: "job", label: "3분 직무", sec: 180, q: "PE에서 수율과 불량 분석이 왜 중요한가요?", hint: "현상 정의, 데이터 분류, 원인 가설, 추가 테스트, 재검증." },
+      { type: "job", label: "3분 직무", sec: 180, q: "DRAM, NAND, SRAM의 차이를 PE 관점에서 설명해주세요.", hint: "동작 원리보다 어떤 특성을 테스트해야 하는지로 연결합니다." },
+      { type: "job", label: "3분 직무", sec: 180, q: "테스트 시간과 품질 사이의 trade-off를 어떻게 보나요?", hint: "줄이는 것이 아니라 검출력 대비 효율을 높이는 방향." },
+      { type: "job", label: "3분 직무", sec: 180, q: "고객 application 불량은 어떻게 접근해야 하나요?", hint: "고객 조건과 내부 테스트 조건 차이를 좁히는 흐름." },
+      { type: "tech", label: "기술 연결", sec: 180, q: "8대 공정 중 PE 관점에서 중요하게 볼 변수는 무엇인가요?", hint: "공정 변수가 전기적 특성과 fail pattern으로 어떻게 보이는지." },
+      { type: "tech", label: "기술 연결", sec: 180, q: "HBM과 AI 메모리 흐름을 PE와 연결해 설명해주세요.", hint: "대역폭, 열, 신호, 고객 application 검증으로 연결." },
+      { type: "tech", label: "기술 연결", sec: 180, q: "NAND Flash에서 Vth Window가 좁아지면 어떤 문제가 생기나요?", hint: "read 판별, retention, P/E cycle, read disturb, distribution." },
+      { type: "pressure", label: "압박", sec: 180, q: "설계가 아니라 왜 PE인가요?", hint: "설계를 몰라서가 아니라 검증과 불량 분석에 강점." },
+      { type: "pressure", label: "압박", sec: 180, q: "직접적인 DRAM/NAND 실무 경험 부족을 어떻게 보완하겠습니까?", hint: "기반은 갖췄고, 입사 후 제품 데이터와 피드백으로 빠르게 학습." }
+    ];
+
+    const weekdays = [
+      { focus: "일요일은 가볍게 컨디션 점검만 합니다.", pills: ["녹화 1개", "환경 확인"] },
+      { focus: "월요일: 1분 기본 질문 3개를 첫 문장 중심으로 고정합니다.", pills: ["자기소개", "강점", "팀워크"] },
+      { focus: "화요일: PE 직무 이해, 수율/불량, DRAM/NAND/SRAM 3분 답변을 훈련합니다.", pills: ["PE 정의", "수율", "메모리"] },
+      { focus: "수요일: HBM, 8대 공정, 테스트 trade-off를 PE 관점으로 연결합니다.", pills: ["HBM", "공정", "Trade-off"] },
+      { focus: "목요일: 랜덤 질문 10개를 짧게 돌리고 8점 미만만 다시 녹음합니다.", pills: ["랜덤 10개", "8점 컷", "재녹음"] },
+      { focus: "금요일: 새 자료는 금지하고 1분 3개, 3분 4개만 반복합니다.", pills: ["최종 압축", "타이머", "노트북 전환"] },
+      { focus: "토요일은 본 검사 또는 실전 리허설 기준으로 PC 환경만 확인합니다.", pills: ["Chrome", "카메라", "마이크"] }
+    ];
+
+    const routineItems = [
+      "오늘의 질문 1개 고르기",
+      "답변 구조만 2분 메모하기",
+      "첫 녹음 또는 녹화하기",
+      "10점 만점으로 자가 채점하기",
+      "첫 문장과 마지막 문장만 고치기",
+      "한 번 더 말하고 종료하기"
+    ];
+
+    const state = {
+      current: questions[0],
+      duration: 60,
+      remaining: 60,
+      running: false,
+      interval: null
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function todayKey() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function loadLog() {
+      return JSON.parse(localStorage.getItem("aisk-pe-log") || "[]");
+    }
+
+    function saveLog(log) {
+      localStorage.setItem("aisk-pe-log", JSON.stringify(log));
+    }
+
+    function updateStats() {
+      const log = loadLog();
+      const today = todayKey();
+      const todayItems = log.filter((item) => item.date === today);
+      $("todayCount").textContent = String(todayItems.length);
+      if (!log.length) {
+        $("avgScore").textContent = "-";
+        $("weakest").textContent = "-";
+        return;
+      }
+      const avg = log.reduce((sum, item) => sum + item.total, 0) / log.length;
+      $("avgScore").textContent = avg.toFixed(1);
+      const buckets = ["결론", "구조", "직무", "구체", "시간"];
+      const totals = [0, 0, 0, 0, 0];
+      log.forEach((item) => item.scores.forEach((v, i) => totals[i] += v));
+      let minIndex = 0;
+      totals.forEach((v, i) => {
+        if (v < totals[minIndex]) minIndex = i;
+      });
+      $("weakest").textContent = buckets[minIndex];
+    }
+
+    function renderRoutine() {
+      const wrap = $("routine");
+      wrap.innerHTML = "";
+      routineItems.forEach((text, index) => {
+        const label = document.createElement("label");
+        label.className = "check";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = localStorage.getItem(`routine-${todayKey()}-${index}`) === "1";
+        input.addEventListener("change", () => {
+          localStorage.setItem(`routine-${todayKey()}-${index}`, input.checked ? "1" : "0");
+        });
+        const span = document.createElement("span");
+        span.textContent = text;
+        label.append(input, span);
+        wrap.appendChild(label);
+      });
+    }
+
+    function renderDayFocus() {
+      const info = weekdays[new Date().getDay()];
+      $("dayFocus").textContent = info.focus;
+      $("dayPills").innerHTML = info.pills.map((pill) => `<span class="pill">${pill}</span>`).join("");
+    }
+
+    function setQuestion(question) {
+      state.current = question;
+      setDuration(question.sec);
+      const tag = $("questionTag");
+      tag.textContent = question.label;
+      tag.className = `tag ${question.type === "basic" ? "basic" : question.type === "tech" ? "tech" : question.type === "pressure" ? "pressure" : ""}`;
+      $("questionText").textContent = question.q;
+      $("questionHint").textContent = question.hint;
+    }
+
+    function pick(filter) {
+      const pool = filter ? questions.filter((item) => item.type === filter || (filter === "job" && item.type === "tech")) : questions;
+      setQuestion(pool[Math.floor(Math.random() * pool.length)]);
+    }
+
+    function format(sec) {
+      const m = String(Math.floor(sec / 60)).padStart(2, "0");
+      const s = String(sec % 60).padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function setDuration(sec) {
+      stopTimer();
+      state.duration = sec;
+      state.remaining = sec;
+      $("time").textContent = format(sec);
+      $("timerHint").textContent = sec === 60 ? "1분 문항은 5문장 안에 끝냅니다." : "3분 문항은 2분 20초에서 2분 40초 사이를 목표로 합니다.";
+      $("timerBox").className = "timer";
+    }
+
+    function stopTimer() {
+      state.running = false;
+      clearInterval(state.interval);
+      $("startStop").textContent = "시작";
+    }
+
+    function tick() {
+      state.remaining -= 1;
+      $("time").textContent = format(Math.max(state.remaining, 0));
+      const ratio = state.remaining / state.duration;
+      $("timerBox").className = `timer ${ratio <= 0.16 ? "danger" : ratio <= 0.33 ? "warn" : ""}`;
+      if (state.remaining <= 0) {
+        stopTimer();
+        if (navigator.vibrate) navigator.vibrate([180, 80, 180]);
+      }
+    }
+
+    function toggleTimer() {
+      if (state.running) {
+        stopTimer();
+        return;
+      }
+      state.running = true;
+      $("startStop").textContent = "정지";
+      state.interval = setInterval(tick, 1000);
+    }
+
+    function scoreValues() {
+      return [1, 2, 3, 4, 5].map((n) => {
+        const input = $(`s${n}`);
+        const value = Math.max(0, Math.min(2, Number(input.value || 0)));
+        input.value = String(value);
+        return value;
+      });
+    }
+
+    function saveScore() {
+      const scores = scoreValues();
+      const total = scores.reduce((a, b) => a + b, 0);
+      const log = loadLog();
+      log.unshift({
+        date: todayKey(),
+        time: new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }),
+        question: state.current.q,
+        type: state.current.label,
+        total,
+        scores,
+        note: $("note").value.trim()
+      });
+      saveLog(log.slice(0, 80));
+      $("note").value = "";
+      [1, 2, 3, 4, 5].forEach((n) => $(`s${n}`).value = "0");
+      updateStats();
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const log = loadLog();
+      const history = $("history");
+      if (!log.length) {
+        history.innerHTML = "<p class=\"hint\">아직 저장된 기록이 없습니다.</p>";
+        return;
+      }
+      history.innerHTML = log.map((item) => `
+        <div class="entry">
+          <strong>${item.total}/10 · ${item.question}</strong>
+          <small>${item.date} ${item.time} · ${item.type}</small>
+          ${item.note ? `<p>${item.note}</p>` : ""}
+        </div>
+      `).join("");
+    }
+
+    function switchTab(name) {
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.setAttribute("aria-selected", String(tab.dataset.tab === name));
+      });
+      document.querySelectorAll("section").forEach((section) => {
+        section.classList.toggle("active", section.id === name);
+      });
+    }
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => switchTab(tab.dataset.tab));
+    });
+
+    $("pickAny").addEventListener("click", () => pick());
+    $("pickBasic").addEventListener("click", () => pick("basic"));
+    $("pickJob").addEventListener("click", () => pick("job"));
+    $("oneMin").addEventListener("click", () => setDuration(60));
+    $("threeMin").addEventListener("click", () => setDuration(180));
+    $("startStop").addEventListener("click", toggleTimer);
+    $("saveScore").addEventListener("click", saveScore);
+    $("resetScore").addEventListener("click", () => {
+      [1, 2, 3, 4, 5].forEach((n) => $(`s${n}`).value = "0");
+      $("note").value = "";
+    });
+    $("clearLog").addEventListener("click", () => {
+      if (confirm("훈련 기록을 삭제할까요?")) {
+        saveLog([]);
+        updateStats();
+        renderHistory();
+      }
+    });
+    $("exportLog").addEventListener("click", async () => {
+      const text = loadLog().map((item) => `${item.date} ${item.time} | ${item.total}/10 | ${item.question} | ${item.note}`).join("\n");
+      await navigator.clipboard.writeText(text || "기록 없음");
+      alert("기록을 클립보드에 복사했습니다.");
+    });
+
+    renderRoutine();
+    renderDayFocus();
+    setQuestion(questions[0]);
+    updateStats();
+    renderHistory();
+  </script>
+</body>
+</html>
