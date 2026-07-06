@@ -319,6 +319,52 @@
       line-height: 1.5;
     }
 
+    #answer {
+      min-height: 180px;
+    }
+
+    .guide {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .guideBox {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfcfc;
+    }
+
+    .guideBox strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .guideBox p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .miniList {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .recorderStatus {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin: 8px 0 0;
+      line-height: 1.45;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 10px;
+    }
+
     details {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -453,6 +499,23 @@
             <button class="btn" id="pickBasic">1분 질문</button>
             <button class="btn" id="pickJob">3분 질문</button>
           </div>
+          <details style="margin-top: 10px;" open>
+            <summary>힌트 / 키워드 / 답변 골격</summary>
+            <div class="guide">
+              <div class="guideBox">
+                <strong>예상 답변 방향</strong>
+                <p id="answerTip">질문을 뽑으면 답변 방향이 표시됩니다.</p>
+              </div>
+              <div class="guideBox">
+                <strong>보면 좋은 키워드</strong>
+                <div class="pillRow" id="keywordPills"></div>
+              </div>
+              <div class="guideBox">
+                <strong>말하기 골격</strong>
+                <ol class="miniList" id="answerOutline"></ol>
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="panel">
@@ -469,6 +532,30 @@
         </div>
 
         <div class="panel">
+          <h2>내 답변 기록</h2>
+          <textarea id="answer" placeholder="여기에 방금 말한 답변을 붙여넣거나 핵심 문장만 적어두세요. 저장하면 질문과 함께 기록됩니다."></textarea>
+          <div class="actions" style="margin-top: 10px;">
+            <button class="btn primary" id="copyCurrent">질문+답변 복사</button>
+            <button class="btn" id="clearAnswer">답변 비우기</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>로컬 녹음</h2>
+          <p class="hint">녹음 파일은 서버에 올라가지 않습니다. 브라우저가 허용하면 이 기기에서만 재생하거나 다운로드할 수 있습니다.</p>
+          <div class="actions three" style="margin-top: 10px;">
+            <button class="btn primary" id="recordStart">녹음 시작</button>
+            <button class="btn" id="recordStop" disabled>정지</button>
+            <button class="btn" id="recordReset" disabled>삭제</button>
+          </div>
+          <p class="recorderStatus" id="recordStatus">대기 중</p>
+          <audio id="recordAudio" controls hidden></audio>
+          <div class="actions" style="margin-top: 10px;">
+            <a class="btn" id="recordDownload" href="#" download="aisk-pe-answer.webm" style="display:none; text-align:center; text-decoration:none; padding-top: 12px;">녹음 다운로드</a>
+          </div>
+        </div>
+
+        <div class="panel">
           <h2>자가 채점</h2>
           <div class="scoreGrid">
             <label for="s1">결론</label><input id="s1" inputmode="numeric" min="0" max="2" value="0">
@@ -480,7 +567,7 @@
           <h3>다음 답변에서 고칠 한 줄</h3>
           <textarea id="note" placeholder="예: 첫 문장을 'PE는 제품 검증과 불량 분석으로 완성도를 높이는 직무입니다'로 시작하기"></textarea>
           <div class="actions" style="margin-top: 10px;">
-            <button class="btn primary" id="saveScore">점수 저장</button>
+            <button class="btn primary" id="saveScore">답변+점수 저장</button>
             <button class="btn" id="resetScore">초기화</button>
           </div>
         </div>
@@ -548,21 +635,156 @@
 
   <script>
     const questions = [
-      { type: "basic", label: "1분 기본", sec: 60, q: "1분 자기소개를 해주세요.", hint: "검증형 엔지니어 문장으로 시작합니다." },
-      { type: "basic", label: "1분 기본", sec: 60, q: "지원 직무에 관심을 갖게 된 계기를 말해주세요.", hint: "설계보다 검증과 원인 분석에 강점이 있다는 흐름으로 갑니다." },
-      { type: "basic", label: "1분 기본", sec: 60, q: "본인의 강점을 경험 기반으로 말해주세요.", hint: "구조화, 작은 단위 검증, cross-check를 넣습니다." },
-      { type: "basic", label: "1분 기본", sec: 60, q: "팀원과 의견이 달랐던 경험을 말해주세요.", hint: "같은 문제 정의를 만드는 사람으로 닫습니다." },
-      { type: "basic", label: "1분 기본", sec: 60, q: "AI를 활용한 경험과 그 한계를 어떻게 관리했는지 말해주세요.", hint: "자동화는 하되 판단은 데이터와 원인으로 검증한다고 말합니다." },
-      { type: "job", label: "3분 직무", sec: 180, q: "Product Engineering 직무를 어떻게 이해하고 있나요?", hint: "Test Engineering, 제품 검증, Test Solution, 불량 분석 네 축." },
-      { type: "job", label: "3분 직무", sec: 180, q: "PE에서 수율과 불량 분석이 왜 중요한가요?", hint: "현상 정의, 데이터 분류, 원인 가설, 추가 테스트, 재검증." },
-      { type: "job", label: "3분 직무", sec: 180, q: "DRAM, NAND, SRAM의 차이를 PE 관점에서 설명해주세요.", hint: "동작 원리보다 어떤 특성을 테스트해야 하는지로 연결합니다." },
-      { type: "job", label: "3분 직무", sec: 180, q: "테스트 시간과 품질 사이의 trade-off를 어떻게 보나요?", hint: "줄이는 것이 아니라 검출력 대비 효율을 높이는 방향." },
-      { type: "job", label: "3분 직무", sec: 180, q: "고객 application 불량은 어떻게 접근해야 하나요?", hint: "고객 조건과 내부 테스트 조건 차이를 좁히는 흐름." },
-      { type: "tech", label: "기술 연결", sec: 180, q: "8대 공정 중 PE 관점에서 중요하게 볼 변수는 무엇인가요?", hint: "공정 변수가 전기적 특성과 fail pattern으로 어떻게 보이는지." },
-      { type: "tech", label: "기술 연결", sec: 180, q: "HBM과 AI 메모리 흐름을 PE와 연결해 설명해주세요.", hint: "대역폭, 열, 신호, 고객 application 검증으로 연결." },
-      { type: "tech", label: "기술 연결", sec: 180, q: "NAND Flash에서 Vth Window가 좁아지면 어떤 문제가 생기나요?", hint: "read 판별, retention, P/E cycle, read disturb, distribution." },
-      { type: "pressure", label: "압박", sec: 180, q: "설계가 아니라 왜 PE인가요?", hint: "설계를 몰라서가 아니라 검증과 불량 분석에 강점." },
-      { type: "pressure", label: "압박", sec: 180, q: "직접적인 DRAM/NAND 실무 경험 부족을 어떻게 보완하겠습니까?", hint: "기반은 갖췄고, 입사 후 제품 데이터와 피드백으로 빠르게 학습." }
+      {
+        type: "basic",
+        label: "1분 기본",
+        sec: 60,
+        q: "1분 자기소개를 해주세요.",
+        hint: "검증형 엔지니어 문장으로 시작합니다.",
+        tip: "본인 소개를 길게 하지 말고, PE에 맞는 문제 해결 방식 하나만 각인시키세요.",
+        keywords: ["검증형 엔지니어", "조건 분리", "데이터 비교", "SRAM/MBIST", "PE 연결"],
+        outline: ["나는 조건과 데이터로 원인을 좁히는 사람", "VLSI/SRAM/TCAD/회로 검증 경험", "복잡한 문제를 검증 단위로 나눈 행동", "PE에서 제품 완성도와 품질에 기여"]
+      },
+      {
+        type: "basic",
+        label: "1분 기본",
+        sec: 60,
+        q: "지원 직무에 관심을 갖게 된 계기를 말해주세요.",
+        hint: "설계보다 검증과 원인 분석에 강점이 있다는 흐름으로 갑니다.",
+        tip: "PE를 '설계 못 해서 고른 직무'처럼 보이지 않게, 설계를 이해한 상태에서 검증·분석에 더 강점이 있다고 말하세요.",
+        keywords: ["설계 이해", "검증 흥미", "pre/post simulation", "불량 원인", "제품 완성도"],
+        outline: ["회로/소자 공부를 하며 실제 동작 검증에 관심", "pre/post simulation, MBIST, PPA에서 검증 경험", "만드는 것보다 제대로 동작하는지 확인하는 과정에 강점", "PE에서 설계와 양산 사이를 연결"]
+      },
+      {
+        type: "basic",
+        label: "1분 기본",
+        sec: 60,
+        q: "본인의 강점을 경험 기반으로 말해주세요.",
+        hint: "구조화, 작은 단위 검증, cross-check를 넣습니다.",
+        tip: "강점 단어만 말하지 말고, 낯선 문제를 어떻게 쪼갰는지 행동을 넣어야 설득됩니다.",
+        keywords: ["구조화", "작은 예제", "cross-check", "Compression decoder", "재현성"],
+        outline: ["강점은 낯선 문제를 구조화하는 태도", "Arithmetic Compression decoder 경험", "입출력과 데이터 흐름을 나누어 구현", "작은 예제부터 원본 데이터까지 검증", "PE 불량 분석과 연결"]
+      },
+      {
+        type: "basic",
+        label: "1분 기본",
+        sec: 60,
+        q: "팀원과 의견이 달랐던 경험을 말해주세요.",
+        hint: "같은 문제 정의를 만드는 사람으로 닫습니다.",
+        tip: "갈등을 이겼다는 식보다, 흩어진 사실을 한 문제 정의로 묶은 사람으로 보여주세요.",
+        keywords: ["헬스케어", "데이터 흐름", "오류 지점", "전체 회의", "문제 정의"],
+        outline: ["팀워크는 같은 문제 정의를 만드는 과정", "의료원 연계 기능에서 오류 반복", "데이터 흐름과 오류 지점 정리", "전체 회의 제안", "PE 협업에서 사실과 데이터로 조율"]
+      },
+      {
+        type: "basic",
+        label: "1분 기본",
+        sec: 60,
+        q: "AI를 활용한 경험과 그 한계를 어떻게 관리했는지 말해주세요.",
+        hint: "자동화는 하되 판단은 데이터와 원인으로 검증한다고 말합니다.",
+        tip: "AI를 '많이 썼다'가 아니라 반복 업무를 줄이고, 결과는 직접 검증했다는 균형으로 답하세요.",
+        keywords: ["반복 자동화", "텍스트 분류", "프로토타이핑", "검증", "판단 책임"],
+        outline: ["AI를 반복 작업 자동화와 구조화에 사용", "지원서 분석/카드 추천/코드 이해 사례", "결과를 그대로 믿지 않고 기준과 샘플로 검증", "PE에서도 자동화와 물리적 해석을 함께 사용"]
+      },
+      {
+        type: "job",
+        label: "3분 직무",
+        sec: 180,
+        q: "Product Engineering 직무를 어떻게 이해하고 있나요?",
+        hint: "Test Engineering, 제품 검증, Test Solution, 불량 분석 네 축.",
+        tip: "정의만 길게 말하지 말고, PE가 테스트 데이터로 제품 완성도를 높이는 직무라는 중심을 잡으세요.",
+        keywords: ["Test Engineering", "제품 검증", "Test Solution", "불량 분석", "개발-양산 가교"],
+        outline: ["PE 한 줄 정의", "네 축 설명", "테스트 조건과 데이터 해석의 중요성", "내 경험: TCAD, SRAM/MBIST, PPA", "품질과 효율을 높이는 기여"]
+      },
+      {
+        type: "job",
+        label: "3분 직무",
+        sec: 180,
+        q: "PE에서 수율과 불량 분석이 왜 중요한가요?",
+        hint: "현상 정의, 데이터 분류, 원인 가설, 추가 테스트, 재검증.",
+        tip: "수율을 생산량만으로 말하지 말고, 불량을 정확히 검출하고 재발 원인을 줄이는 일로 설명하세요.",
+        keywords: ["수율", "fail pattern", "전압/온도", "lot/wafer", "재검증"],
+        outline: ["수율과 불량 분석 정의", "품질과 양산 효율에 중요한 이유", "현상-분류-가설-추가 테스트-분석-개선 흐름", "조건별 fail 예시", "검증 경험과 연결"]
+      },
+      {
+        type: "job",
+        label: "3분 직무",
+        sec: 180,
+        q: "DRAM, NAND, SRAM의 차이를 PE 관점에서 설명해주세요.",
+        hint: "동작 원리보다 어떤 특성을 테스트해야 하는지로 연결합니다.",
+        tip: "메모리 구조 설명 50%, PE 테스트 포인트 50%로 배분하면 좋습니다.",
+        keywords: ["DRAM retention", "NAND Vth", "SRAM margin", "MBIST", "테스트 조건"],
+        outline: ["각 메모리의 저장 방식 차이", "DRAM: refresh, retention, sense margin", "NAND: P/E, retention, endurance, Vth distribution", "SRAM: read/write margin, speed, mismatch", "SRAM/MBIST 경험 연결"]
+      },
+      {
+        type: "job",
+        label: "3분 직무",
+        sec: 180,
+        q: "테스트 시간과 품질 사이의 trade-off를 어떻게 보나요?",
+        hint: "줄이는 것이 아니라 검출력 대비 효율을 높이는 방향.",
+        tip: "테스트를 줄이면 좋다는 답은 위험합니다. '놓치면 안 되는 불량은 유지하고 중복을 줄인다'가 핵심입니다.",
+        keywords: ["검출력", "test time", "screen", "yield impact", "중복 테스트"],
+        outline: ["테스트 항목 증가의 장단점", "품질과 양산성의 균형", "불량 검출력 높은 조건 유지", "중복/효과 낮은 항목 데이터로 개선", "PPA trade-off 경험 연결"]
+      },
+      {
+        type: "job",
+        label: "3분 직무",
+        sec: 180,
+        q: "고객 application 불량은 어떻게 접근해야 하나요?",
+        hint: "고객 조건과 내부 테스트 조건 차이를 좁히는 흐름.",
+        tip: "내부 테스트 통과 제품이 왜 고객 환경에서 실패했는지, 조건 차이를 줄이는 방식으로 말하세요.",
+        keywords: ["재현 조건", "고객 환경", "전압/온도/속도", "workload", "AE 협업"],
+        outline: ["고객 application 불량 정의", "현상과 재현율 명확화", "고객 조건과 내부 조건 비교", "lot/제품군/환경별 분류", "AE/설계/공정/품질과 같은 문제 정의"]
+      },
+      {
+        type: "tech",
+        label: "기술 연결",
+        sec: 180,
+        q: "8대 공정 중 PE 관점에서 중요하게 볼 변수는 무엇인가요?",
+        hint: "공정 변수가 전기적 특성과 fail pattern으로 어떻게 보이는지.",
+        tip: "8대 공정을 다 외우듯 말하지 말고, 공정 변수 → 전기적 특성 → 테스트 데이터 흐름으로 답하세요.",
+        keywords: ["CD variation", "식각 profile", "막 두께", "Vt", "particle", "open/short"],
+        outline: ["공정명보다 전기적 특성 연결이 중요", "포토/식각: CD, open/short, timing", "증착/CMP: 균일도, 저항, 기생성분", "이온주입/산화: Vt, leakage, reliability", "PE는 테스트 데이터로 가설을 세움"]
+      },
+      {
+        type: "tech",
+        label: "기술 연결",
+        sec: 180,
+        q: "HBM과 AI 메모리 흐름을 PE와 연결해 설명해주세요.",
+        hint: "대역폭, 열, 신호, 고객 application 검증으로 연결.",
+        tip: "AI 메모리 트렌드 설명보다, 고성능 제품일수록 검증 조건이 어려워진다는 쪽으로 PE 연결을 만드세요.",
+        keywords: ["대역폭", "데이터 이동", "TSV", "열", "신호 무결성", "고객 시스템"],
+        outline: ["AI 모델에서 메모리 대역폭과 데이터 이동이 병목", "HBM은 적층과 TSV로 높은 대역폭 제공", "PE 관점: 속도, 전력, 열, 신호, 패키징 신뢰성", "quantization/compression 경험 연결", "고객 조건 기반 검증 기여"]
+      },
+      {
+        type: "tech",
+        label: "기술 연결",
+        sec: 180,
+        q: "NAND Flash에서 Vth Window가 좁아지면 어떤 문제가 생기나요?",
+        hint: "read 판별, retention, P/E cycle, read disturb, distribution.",
+        tip: "문제 현상만 말하지 말고, 어떤 조건에서 분포가 좁아지는지 나누어 보겠다고 답하세요.",
+        keywords: ["threshold voltage", "read error", "P/E cycle", "retention", "read disturb", "ECC"],
+        outline: ["Vth Window는 cell 상태를 구분하는 전압 여유", "좁아지면 read 판별 오류 증가", "원인: 열화, retention, read disturb, 간섭, 공정 편차", "조건별 distribution과 error pattern 분석", "read reference/ECC/screen 검토"]
+      },
+      {
+        type: "pressure",
+        label: "압박",
+        sec: 180,
+        q: "설계가 아니라 왜 PE인가요?",
+        hint: "설계를 몰라서가 아니라 검증과 불량 분석에 강점.",
+        tip: "설계 관심을 부정하지 말고, 설계를 이해하기 때문에 제품 검증과 원인 분석에서 더 넓게 기여할 수 있다고 말하세요.",
+        keywords: ["설계 이해", "제품 검증", "불량 분석", "pre/post simulation", "PPA", "cross-check"],
+        outline: ["회로 설계에도 관심이 있음", "하지만 강점은 실제 조건 검증과 원인 분석", "pre/post, SRAM/MBIST, PPA, decoder cross-check 경험", "PE는 설계·소자·공정 지식을 데이터와 연결", "제품 완성도 향상에 기여"]
+      },
+      {
+        type: "pressure",
+        label: "압박",
+        sec: 180,
+        q: "직접적인 DRAM/NAND 실무 경험 부족을 어떻게 보완하겠습니까?",
+        hint: "기반은 갖췄고, 입사 후 제품 데이터와 피드백으로 빠르게 학습.",
+        tip: "부족함을 방어하지 말고 인정한 뒤, 이미 가진 기반과 학습 방식을 말하세요.",
+        keywords: ["인정", "소자/회로 기반", "SRAM/MBIST", "테스트 데이터", "선배 피드백", "빠른 학습"],
+        outline: ["실무 제품 경험은 입사 후 채워야 할 부분", "소자·회로·SRAM/MBIST·PPA 기반은 있음", "모르는 부분은 구조화하고 테스트 데이터로 학습", "선배 피드백과 문서로 빠르게 보완", "불량 원인을 데이터로 좁히는 태도 강조"]
+      }
     ];
 
     const weekdays = [
@@ -589,7 +811,10 @@
       duration: 60,
       remaining: 60,
       running: false,
-      interval: null
+      interval: null,
+      recorder: null,
+      audioChunks: [],
+      audioUrl: ""
     };
 
     const $ = (id) => document.getElementById(id);
@@ -604,6 +829,42 @@
 
     function saveLog(log) {
       localStorage.setItem("aisk-pe-log", JSON.stringify(log));
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      }
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      document.execCommand("copy");
+      area.remove();
+      return Promise.resolve();
+    }
+
+    function formatEntry(item) {
+      return [
+        `질문: ${item.question}`,
+        `답변: ${item.answer || "(기록 없음)"}`,
+        `점수: ${item.total}/10`,
+        `유형: ${item.type}`,
+        `시간: ${item.date} ${item.time}`,
+        `다음 수정점: ${item.note || "(없음)"}`
+      ].join("\n");
     }
 
     function updateStats() {
@@ -661,6 +922,9 @@
       tag.className = `tag ${question.type === "basic" ? "basic" : question.type === "tech" ? "tech" : question.type === "pressure" ? "pressure" : ""}`;
       $("questionText").textContent = question.q;
       $("questionHint").textContent = question.hint;
+      $("answerTip").textContent = question.tip || question.hint;
+      $("keywordPills").innerHTML = (question.keywords || []).map((word) => `<span class="pill">${escapeHtml(word)}</span>`).join("");
+      $("answerOutline").innerHTML = (question.outline || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
     }
 
     function pick(filter) {
@@ -730,10 +994,12 @@
         type: state.current.label,
         total,
         scores,
+        answer: $("answer").value.trim(),
         note: $("note").value.trim()
       });
       saveLog(log.slice(0, 80));
       $("note").value = "";
+      $("answer").value = "";
       [1, 2, 3, 4, 5].forEach((n) => $(`s${n}`).value = "0");
       updateStats();
       renderHistory();
@@ -748,11 +1014,90 @@
       }
       history.innerHTML = log.map((item) => `
         <div class="entry">
-          <strong>${item.total}/10 · ${item.question}</strong>
-          <small>${item.date} ${item.time} · ${item.type}</small>
-          ${item.note ? `<p>${item.note}</p>` : ""}
+          <strong>${escapeHtml(item.total)}/10 · ${escapeHtml(item.question)}</strong>
+          <small>${escapeHtml(item.date)} ${escapeHtml(item.time)} · ${escapeHtml(item.type)}</small>
+          ${item.answer ? `<p><b>답변</b><br>${escapeHtml(item.answer).replaceAll("\n", "<br>")}</p>` : ""}
+          ${item.note ? `<p><b>다음 수정점</b><br>${escapeHtml(item.note).replaceAll("\n", "<br>")}</p>` : ""}
+          <button class="btn copyEntry" data-index="${log.indexOf(item)}" style="width: 100%; margin-top: 8px;">이 기록 복사</button>
         </div>
       `).join("");
+      document.querySelectorAll(".copyEntry").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const item = loadLog()[Number(button.dataset.index)];
+          await copyText(formatEntry(item));
+          alert("질문과 답변을 복사했습니다.");
+        });
+      });
+    }
+
+    async function copyCurrentAnswer() {
+      const text = [
+        `질문: ${state.current.q}`,
+        `답변: ${$("answer").value.trim() || "(아직 기록 없음)"}`,
+        `힌트: ${state.current.hint}`,
+        `키워드: ${(state.current.keywords || []).join(", ")}`
+      ].join("\n");
+      await copyText(text);
+      alert("현재 질문과 답변을 복사했습니다.");
+    }
+
+    function setRecorderStatus(text) {
+      $("recordStatus").textContent = text;
+    }
+
+    function resetRecording() {
+      if (state.audioUrl) URL.revokeObjectURL(state.audioUrl);
+      state.audioUrl = "";
+      state.audioChunks = [];
+      $("recordAudio").hidden = true;
+      $("recordAudio").removeAttribute("src");
+      $("recordDownload").style.display = "none";
+      $("recordDownload").removeAttribute("href");
+      $("recordReset").disabled = true;
+      setRecorderStatus("대기 중");
+    }
+
+    async function startRecording() {
+      if (!navigator.mediaDevices || !window.MediaRecorder) {
+        setRecorderStatus("이 브라우저는 바로 녹음을 지원하지 않습니다. 휴대폰 기본 녹음 앱으로 녹음한 뒤 답변만 여기에 기록해 주세요.");
+        return;
+      }
+      try {
+        resetRecording();
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        state.recorder = recorder;
+        recorder.addEventListener("dataavailable", (event) => {
+          if (event.data.size > 0) state.audioChunks.push(event.data);
+        });
+        recorder.addEventListener("stop", () => {
+          stream.getTracks().forEach((track) => track.stop());
+          const blob = new Blob(state.audioChunks, { type: recorder.mimeType || "audio/webm" });
+          state.audioUrl = URL.createObjectURL(blob);
+          $("recordAudio").src = state.audioUrl;
+          $("recordAudio").hidden = false;
+          $("recordDownload").href = state.audioUrl;
+          $("recordDownload").download = `aisk-pe-${Date.now()}.webm`;
+          $("recordDownload").style.display = "block";
+          $("recordReset").disabled = false;
+          $("recordStart").disabled = false;
+          $("recordStop").disabled = true;
+          setRecorderStatus("녹음 완료. 이 화면에서 재생하거나 다운로드할 수 있습니다.");
+        });
+        recorder.start();
+        $("recordStart").disabled = true;
+        $("recordStop").disabled = false;
+        $("recordReset").disabled = true;
+        setRecorderStatus("녹음 중입니다. 답변을 말한 뒤 정지를 누르세요.");
+      } catch (error) {
+        setRecorderStatus("마이크 권한이 거부되었거나 녹음을 시작할 수 없습니다.");
+      }
+    }
+
+    function stopRecording() {
+      if (state.recorder && state.recorder.state !== "inactive") {
+        state.recorder.stop();
+      }
     }
 
     function switchTab(name) {
@@ -775,9 +1120,15 @@
     $("threeMin").addEventListener("click", () => setDuration(180));
     $("startStop").addEventListener("click", toggleTimer);
     $("saveScore").addEventListener("click", saveScore);
+    $("copyCurrent").addEventListener("click", copyCurrentAnswer);
+    $("clearAnswer").addEventListener("click", () => $("answer").value = "");
+    $("recordStart").addEventListener("click", startRecording);
+    $("recordStop").addEventListener("click", stopRecording);
+    $("recordReset").addEventListener("click", resetRecording);
     $("resetScore").addEventListener("click", () => {
       [1, 2, 3, 4, 5].forEach((n) => $(`s${n}`).value = "0");
       $("note").value = "";
+      $("answer").value = "";
     });
     $("clearLog").addEventListener("click", () => {
       if (confirm("훈련 기록을 삭제할까요?")) {
@@ -787,8 +1138,8 @@
       }
     });
     $("exportLog").addEventListener("click", async () => {
-      const text = loadLog().map((item) => `${item.date} ${item.time} | ${item.total}/10 | ${item.question} | ${item.note}`).join("\n");
-      await navigator.clipboard.writeText(text || "기록 없음");
+      const text = loadLog().map(formatEntry).join("\n\n---\n\n");
+      await copyText(text || "기록 없음");
       alert("기록을 클립보드에 복사했습니다.");
     });
 
